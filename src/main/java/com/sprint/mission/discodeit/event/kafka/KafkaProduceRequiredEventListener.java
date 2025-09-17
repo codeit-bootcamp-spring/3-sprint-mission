@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.event.MessageCreateEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
+import com.sprint.mission.discodeit.event.message.UserLogInOutEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -15,6 +17,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @RequiredArgsConstructor
 @Component
+@ConditionalOnProperty(name = "app.messaging.type", havingValue = "kafka")
 public class KafkaProduceRequiredEventListener {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
@@ -64,6 +67,23 @@ public class KafkaProduceRequiredEventListener {
             log.info("Kafka로 S3 업로드 실패 이벤트 발급 완료");
         } catch (Exception e) {
             log.error("Kafka S3 업로드 실패 이벤트 발급 실패 - error : {}", e.getMessage());
+        }
+    }
+
+    @Async("eventTaskExecutor")
+    @EventListener
+    public void on(UserLogInOutEvent event) {
+        try {
+            log.info("[Kafka Producer] 사용자 로그인/로그아웃 이벤트 발급 - 스레드: {}, 사용자: {}, 로그인: {}",
+                Thread.currentThread().getName(), event.userId(), event.isLoggedIn());
+
+            String payload = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send("discodeit.UserLogInOutEvent", payload);
+
+            log.info("[Kafka Producer] 사용자 로그인/로그아웃 이벤트 발급 완료 - 사용자: {}", event.userId());
+        } catch (Exception e) {
+            log.error("[Kafka Producer] 사용자 로그인/로그아웃 이벤트 발급 실패 - 사용자: {}, error: {}",
+                event.userId(), e.getMessage());
         }
     }
 }

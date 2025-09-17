@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.SseService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class BasicChannelService implements ChannelService {
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
   private final ChannelMapper channelMapper;
+  private final SseService sseService;
 
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
@@ -58,8 +60,18 @@ public class BasicChannelService implements ChannelService {
     // ID가 할당되어있는 저장된 엔티티를 받아서 사용
     Channel savedChannel = channelRepository.save(channel);
     log.info("[Public 채널 생성 성공] 채널 이름 : {} ", name);
-    return channelMapper.toDto(savedChannel);
 
+    ChannelDto channelDto = channelMapper.toDto(channel);
+
+    try {
+      sseService.broadcast("channels.created", channelDto);
+      log.debug("SSE 채널 생성 이벤트 전송 성공 : channelId = {}", channel.getId());
+    } catch (Exception e) {
+      log.error("SSE 채널 생성 이벤트 전송 실패 : channelId = {}, error = {}",
+          channel.getId(), e.getMessage());
+    }
+
+    return channelDto;
   }
 
   @Transactional
@@ -93,7 +105,6 @@ public class BasicChannelService implements ChannelService {
     log.info("[읽음 상태 생성 성공] 읽음 상태 갯수 : {} ", readStatuses.size());
 
     return channelMapper.toDto(savedChannel);
-
   }
 
   @Transactional(readOnly = true)
@@ -153,7 +164,18 @@ public class BasicChannelService implements ChannelService {
     channel.update(newName, newDescription);
     log.info("[채널 수정 성공] 채널 ID : {} ", channelId);
 
-    return channelMapper.toDto(channel);
+    ChannelDto channelDto = channelMapper.toDto(channel);
+
+    // SSE 브로드캐스트
+    try {
+      sseService.broadcast("channels.updated", channelDto);
+      log.debug("SSE 채널 수정 이벤트 전송 성공: channelId = {}", channelId);
+    } catch (Exception e) {
+      log.error("SSE 채널 수정 이벤트 전송 실패: channelId = {}, error = {}",
+          channelId, e.getMessage());
+    }
+
+    return channelDto;
   }
 
   @Transactional
@@ -162,6 +184,8 @@ public class BasicChannelService implements ChannelService {
   // 채널 삭제 시 모든 사용자의 채널 목록 캐시 무효화
   @CacheEvict(value = "userChannels", allEntries = true)
   public void delete(UUID channelId) {
+    ChannelDto channelDto = find(channelId);
+
     log.info("[채널 삭제 시도] 채널 ID : {} ", channelId);
 
     if (!channelRepository.existsById(channelId)) {
@@ -174,5 +198,13 @@ public class BasicChannelService implements ChannelService {
     log.info("[채널 삭제 성공] 채널 ID : {} ", channelId);
 
     channelRepository.deleteById(channelId);
+
+    try {
+      sseService.broadcast("channels.deleted", channelDto);
+      log.debug("SSE 채널 삭제 이벤트 전송 성공 : channelId = {}", channelId);
+    } catch (Exception e) {
+      log.error("SSE 채널 삭제 이벤트 전송 실패 : channelId = {}, error = {}",
+          channelId, e.getMessage());
+    }
   }
 }

@@ -1,0 +1,18 @@
+spring:
+  kafka:
+    bootstrap-servers: broker:29092
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+# 무한 로그 방지
+logging:
+  level:
+    org.apache.kafka: WARN
+    org.springframework.kafka: INFO
+    org.springframework.kafka.listener: INFO

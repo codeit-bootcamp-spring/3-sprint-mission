@@ -10,8 +10,8 @@ COPY gradle/ gradle/
 COPY build.gradle .
 COPY settings.gradle .
 
-# 권한 부여 (중요!)
-RUN chmod +x gradlew
+# Windows 줄바꿈 문제 해결 + 권한 부여
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 
 # 의존성 다운로드 (레이어 캐시 최적화)
 RUN ./gradlew dependencies --no-daemon

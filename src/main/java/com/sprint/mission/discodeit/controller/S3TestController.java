@@ -2,12 +2,14 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.storage.s3.AWSS3Test;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
 public class S3TestController {
 
     private final AWSS3Test awsS3Test;

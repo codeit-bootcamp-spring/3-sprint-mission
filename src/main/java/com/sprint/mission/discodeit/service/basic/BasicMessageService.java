@@ -65,7 +65,9 @@ public class BasicMessageService implements MessageService {
           return new UserNotFoundException();
         });
 
-    List<BinaryContent> attachments = binaryContentCreateRequests.stream()
+    List<BinaryContent> attachments = Optional.ofNullable(binaryContentCreateRequests)
+        .orElse(List.of())
+        .stream()
         .map(attachmentRequest -> {
           String fileName = attachmentRequest.fileName();
           String contentType = attachmentRequest.contentType();

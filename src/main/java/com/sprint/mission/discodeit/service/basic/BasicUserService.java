@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserSessionService;
 import java.time.Instant;
@@ -44,6 +45,7 @@ public class BasicUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final UserSessionService userSessionService;
   private final CacheManager cacheManager;
+  private final SseService sseService;
 
 
   @Transactional
@@ -95,7 +97,19 @@ public class BasicUserService implements UserService {
     Instant now = Instant.now();
 
     userRepository.save(user);
-    return userMapper.toDto(user, false);
+
+      UserDto userDto = userMapper.toDto(user, false);
+
+    try {
+        sseService.broadcast("users.created", userDto);
+        log.debug("SSE 사용자 생성 이벤트 전송 성공 : userId = {}, online = false",
+            user.getId());
+    } catch (Exception e) {
+        log.error("SSE 사용자 생성 이벤트 전송 실패 : userId = {}, error = {}",
+            user.getId(), e.getMessage());
+    }
+
+    return userDto;
   }
 
   @Transactional(readOnly = true)
@@ -180,13 +194,29 @@ public class BasicUserService implements UserService {
       log.info("[유저 수정 성공] 유저 ID : {}", userId);
 
       boolean isOnline = userSessionService.isUserOnline(userId);
-      return userMapper.toDto(user, isOnline);
+      UserDto userDto = userMapper.toDto(user, isOnline);
+
+      try {
+          sseService.broadcast("users.updated", userDto);
+          log.debug("SSE 사용자 수정 이벤트 전송 성공: userId = {}, online = {}",
+              userId, isOnline);
+      } catch (Exception e) {
+          log.error("SSE 사용자 수정 이벤트 전송 실패: userId = {}, error = {}",
+              userId, e.getMessage());
+      }
+
+      return userDto;
   }
 
   @Transactional
   @Override
   @CacheEvict(value = "users", allEntries = true)
   public void delete(UUID userId) {
+      User user = userRepository.findById(userId)
+              .orElseThrow(() -> new UserNotFoundException());
+      boolean isOnline = userSessionService.isUserOnline(userId);
+      UserDto userDto = userMapper.toDto(user, isOnline);
+
       log.info("[유저 삭제 시도] 유저 ID : {}", userId);
 
     if (!userRepository.existsById(userId)) {
@@ -199,6 +229,15 @@ public class BasicUserService implements UserService {
 
       userRepository.deleteById(userId);
     log.info("[유저 삭제 성공] 유저 ID: {}", userId);
+
+      try {
+          sseService.broadcast("users.deleted", userDto);
+          log.debug("SSE 사용자 삭제 이벤트 전송 성공: userId = {}, online = {}",
+              userId, isOnline);
+      } catch (Exception e) {
+          log.error("SSE 사용자 삭제 이벤트 전송 실패: userId = {}, error = {}",
+              userId, e.getMessage());
+      }
   }
 
     @Transactional
@@ -227,7 +266,20 @@ public class BasicUserService implements UserService {
             log.info("[사용자 권한 변경 스킵] 기존 권한과 동일합니다. userId: {}, role: {}", userId, newRole);
         }
 
-        return userMapper.toDto(user);
+        boolean isOnline = userSessionService.isUserOnline(user.getId());
+        UserDto userDto = userMapper.toDto(user, isOnline);
+
+        // SSE 브로드캐스트
+        try {
+            sseService.broadcast("users.updated", userDto);
+            log.debug("SSE 사용자 권한 변경 이벤트 전송 성공: userId = {}, online = {}",
+                userId, isOnline);
+        } catch (Exception e) {
+            log.error("SSE 사용자 권한 변경 이벤트 전송 실패: userId = {}, error = {}",
+                userId, e.getMessage());
+        }
+
+        return userDto;
     }
 
     // @CachePut을 활용한 강제 캐시 갱신 ( 필요한 case에만 )

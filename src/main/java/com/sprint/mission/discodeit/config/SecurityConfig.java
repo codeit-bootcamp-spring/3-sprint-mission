@@ -1,15 +1,11 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -23,10 +19,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -34,8 +27,6 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @RequiredArgsConstructor
@@ -60,6 +51,9 @@ public class SecurityConfig {
                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
                 // 테스트 용 - 테스트 엔드포인트는 CSRF 보호 제외
                 .ignoringRequestMatchers("/api/test/cache/**")
+                // SSE 엔드포인트 CSRF 제외 ( EventSource에서 CSRF 헤더 전송 불가 )
+                .ignoringRequestMatchers("/api/sse")
+                .ignoringRequestMatchers("/api/binaryContents/*/download")
             )
             .formLogin(login -> login
                 .loginProcessingUrl("/api/auth/login")
@@ -86,6 +80,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/login").permitAll()     // 로그인
                 .requestMatchers("/api/auth/logout").permitAll()    // 로그아웃
                 .requestMatchers("/api/auth/refresh").permitAll()
+                .requestMatchers("/api/binaryContents/**").permitAll()
+                .requestMatchers("/api/sse").permitAll()
+                .requestMatchers("/ws/**").permitAll()
 
                 // 테스트용 - 캐시 테스트 엔드포인트 허용
                 .requestMatchers("/api/test/cache/**").permitAll()

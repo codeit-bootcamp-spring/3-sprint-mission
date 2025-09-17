@@ -1,0 +1,264 @@
+version: '3.8'
+
+services:
+  # Nginx Reverse Proxy with Load Balancing
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: discodeit-nginx
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx/nginx-distributed.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend-1
+      - backend-2
+      - backend-3
+    networks:
+      - discodeit-network
+    restart: unless-stopped
+
+  # Backend Application Instance 1
+  backend-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discodeit-backend-1
+    environment:
+      SPRING_PROFILES_ACTIVE: distributed
+
+      # Instance 식별
+      SERVER_INSTANCE_ID: backend-1
+
+      # Kafka 설정
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:29092
+
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-discodeit}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-discodeit}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-discodeit123}
+
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+      # App Settings
+      APP_JWT_REGISTRY_TYPE: redis
+      APP_MESSAGING_TYPE: kafka
+      APP_SSE_TYPE: redis
+
+      # Server
+      SERVER_PORT: 8080
+
+      # Storage
+      DISCODEIT_STORAGE_TYPE: local
+      DISCODEIT_STORAGE_LOCAL_ROOT_PATH: /app/.discodeit/storage
+
+      # JVM
+      JVM_OPTS: ${JVM_OPTS:--Xmx512m}
+    volumes:
+      - shared_backend_storage:/app/.discodeit/storage
+    networks:
+      - discodeit-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    restart: unless-stopped
+    expose:
+      - "8080"
+
+  # Backend Application Instance 2
+  backend-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discodeit-backend-2
+    environment:
+      SPRING_PROFILES_ACTIVE: distributed
+
+      # Instance 식별
+      SERVER_INSTANCE_ID: backend-2
+
+      # Kafka 설정
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:29092
+
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-discodeit}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-discodeit}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-discodeit123}
+
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+      # App Settings
+      APP_JWT_REGISTRY_TYPE: redis
+      APP_MESSAGING_TYPE: kafka
+      APP_SSE_TYPE: redis
+
+      # Server
+      SERVER_PORT: 8080
+
+      # Storage
+      DISCODEIT_STORAGE_TYPE: local
+      DISCODEIT_STORAGE_LOCAL_ROOT_PATH: /app/.discodeit/storage
+
+      # JVM
+      JVM_OPTS: ${JVM_OPTS:--Xmx512m}
+    volumes:
+      - shared_backend_storage:/app/.discodeit/storage
+    networks:
+      - discodeit-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    restart: unless-stopped
+    expose:
+      - "8080"
+
+  # Backend Application Instance 3
+  backend-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discodeit-backend-3
+    environment:
+      SPRING_PROFILES_ACTIVE: distributed
+
+      # Instance 식별
+      SERVER_INSTANCE_ID: backend-3
+
+      # Kafka 설정
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:29092
+
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-discodeit}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-discodeit}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-discodeit123}
+
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+      # App Settings
+      APP_JWT_REGISTRY_TYPE: redis
+      APP_MESSAGING_TYPE: kafka
+      APP_SSE_TYPE: redis
+
+      # Server
+      SERVER_PORT: 8080
+
+      # Storage
+      DISCODEIT_STORAGE_TYPE: local
+      DISCODEIT_STORAGE_LOCAL_ROOT_PATH: /app/.discodeit/storage
+
+      # JVM
+      JVM_OPTS: ${JVM_OPTS:--Xmx512m}
+    volumes:
+      - shared_backend_storage:/app/.discodeit/storage
+    networks:
+      - discodeit-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    restart: unless-stopped
+    expose:
+      - "8080"
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17
+    container_name: discodeit-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-discodeit}
+      POSTGRES_USER: ${POSTGRES_USER:-discodeit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-discodeit123}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+      TZ: Asia/Seoul
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    networks:
+      - discodeit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-discodeit} -d ${POSTGRES_DB:-discodeit}"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+
+  # Redis Memory Database
+  redis:
+    image: redis:7-alpine
+    container_name: discodeit-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - discodeit-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  # Kafka Message Broker
+  broker:
+    image: apache/kafka:latest
+    hostname: broker
+    container_name: discodeit-kafka
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - discodeit-network
+    restart: unless-stopped
+    expose:
+      - "29092"
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  shared_backend_storage:
+    driver: local
+
+networks:
+  discodeit-network:
+    driver: bridge
