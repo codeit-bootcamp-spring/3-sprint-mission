@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.sse;
+package com.sprint.mission.discodeit.event.listener;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.sse.SseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;

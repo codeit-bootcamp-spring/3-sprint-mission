@@ -1,5 +1,6 @@
-package com.sprint.mission.discodeit.sse;
+package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.sse.SseService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;

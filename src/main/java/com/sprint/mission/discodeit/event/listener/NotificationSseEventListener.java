@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.sse;
+package com.sprint.mission.discodeit.event.listener;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
+import com.sprint.mission.discodeit.sse.SseService;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
