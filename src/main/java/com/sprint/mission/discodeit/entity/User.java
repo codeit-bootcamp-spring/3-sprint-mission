@@ -45,18 +45,20 @@ public class User extends BaseUpdatableEntity {
     @Column(name = "password", nullable = false, length = 100)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "profile_id")
     private BinaryContent profile;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserStatus userStatus;
 
     public User(String username, String email, String password, BinaryContent profile) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.profile = profile;
+        this.role = Role.USER;
     }
 
     public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
@@ -77,9 +79,7 @@ public class User extends BaseUpdatableEntity {
         }
     }
 
-    // 양방향 편의 메소드
-    public void setUserStatus(UserStatus userStatus) {
-        this.userStatus = userStatus;
-        userStatus.setUser(this);
+    public void updateRole(Role role) {
+        this.role = role;
     }
 }

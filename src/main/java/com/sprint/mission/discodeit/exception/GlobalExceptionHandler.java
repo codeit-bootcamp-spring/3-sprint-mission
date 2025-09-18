@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.exception;
 import com.sprint.mission.discodeit.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -42,9 +43,22 @@ public class GlobalExceptionHandler {
                         "잘못된 요청입니다.",
                         Map.of("message", message),
                         ex.getClass().getSimpleName(),
-                        400,
+                        403,
                         Instant.now()
                         ));
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(
+                        "ACCESS_DENIED",
+                        "해당 리소스에 접근할 권한이 없습니다.",
+                        Map.of("message", ex.getMessage()),
+                        ex.getClass().getSimpleName(),
+                        403,
+                        Instant.now()
+                ));
     }
 
     @ExceptionHandler(Exception.class)

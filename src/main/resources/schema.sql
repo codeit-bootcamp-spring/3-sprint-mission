@@ -7,6 +7,7 @@ CREATE TABLE tbl_user (
     email varchar(100) unique not null,
     password varchar(60) not null,
     profile_id uuid,
+    role varchar(20) NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone
 );
