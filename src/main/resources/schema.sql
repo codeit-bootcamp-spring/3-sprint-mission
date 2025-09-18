@@ -1,5 +1,13 @@
 -- 테이블
 -- User
+DROP TABLE IF EXISTS public.message_attachments CASCADE;
+DROP TABLE IF EXISTS public.read_statuses CASCADE;
+DROP TABLE IF EXISTS public.messages CASCADE;
+DROP TABLE IF EXISTS public.channels CASCADE;
+DROP TABLE IF EXISTS public.users CASCADE;
+DROP TABLE IF EXISTS public.binary_contents CASCADE;
+DROP TABLE IF EXISTS persistent_logins CASCADE;
+
 CREATE TABLE users
 (
     id         uuid PRIMARY KEY,
@@ -8,7 +16,8 @@ CREATE TABLE users
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
-    profile_id uuid
+    profile_id uuid,
+    role       VARCHAR(255)
 );
 
 -- BinaryContent
@@ -22,14 +31,12 @@ CREATE TABLE binary_contents
 --     ,bytes        bytea        NOT NULL
 );
 
--- UserStatus
-CREATE TABLE user_statuses
+CREATE TABLE persistent_logins
 (
-    id             uuid PRIMARY KEY,
-    created_at     timestamp with time zone NOT NULL,
-    updated_at     timestamp with time zone,
-    user_id        uuid UNIQUE              NOT NULL,
-    last_active_at timestamp with time zone NOT NULL
+    username  VARCHAR(64) NOT NULL,
+    series    VARCHAR(64) PRIMARY KEY,
+    token     VARCHAR(64) NOT NULL,
+    last_used TIMESTAMPTZ NOT NULL
 );
 
 -- Channel
@@ -83,12 +90,6 @@ ALTER TABLE users
             REFERENCES binary_contents (id)
             ON DELETE SET NULL;
 
--- UserStatus (1) -> User (1)
-ALTER TABLE user_statuses
-    ADD CONSTRAINT fk_user_status_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id)
-            ON DELETE CASCADE;
 
 -- Message (N) -> Channel (1)
 ALTER TABLE messages
@@ -124,3 +125,4 @@ ALTER TABLE read_statuses
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
             ON DELETE CASCADE;
+

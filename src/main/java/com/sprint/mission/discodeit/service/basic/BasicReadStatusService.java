@@ -62,6 +62,8 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+
     public ReadStatusDto find(UUID readStatusId) {
         log.debug("ReadStatus 조회 요청: id={}", readStatusId);
 
@@ -71,6 +73,8 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
         log.debug("사용자 기준 ReadStatus 전체 조회: userId={}", userId);
 
