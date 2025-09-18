@@ -9,6 +9,10 @@ spring:
     username: sa
     password:
 
+  sql:
+    init:
+      mode: never
+
   h2:
     console:
       enabled: true

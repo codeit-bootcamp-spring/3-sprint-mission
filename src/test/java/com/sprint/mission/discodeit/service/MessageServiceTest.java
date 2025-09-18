@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -97,7 +98,8 @@ public class MessageServiceTest {
 
             Channel channel = new Channel(ChannelType.PUBLIC, "test channel", "description");
             User author = new User("testuser", "test@example.com", "pass", null);
-            UserDto userDto = new UserDto(authorId, "testuser", "test@example.com", null, true);
+            UserDto userDto = new UserDto(authorId, "testuser", "test@example.com", null, true,
+                Role.ADMIN);
             Message savedMessage = new Message(content, channel, author, null);
             MessageDto expectedDto = new MessageDto(UUID.randomUUID(), Instant.now(), null, content,
                 channelId, userDto, null);

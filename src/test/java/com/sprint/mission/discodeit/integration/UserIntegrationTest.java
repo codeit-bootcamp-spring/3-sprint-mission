@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -9,9 +11,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.UUID;
@@ -20,11 +25,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -62,7 +69,8 @@ class UserIntegrationTest {
         mockMvc.perform(multipart("/api/users")
                 .file(userCreateRequestPart)
                 .file(profilePart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .with(csrf()))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.username").value("testuser"))
             .andExpect(jsonPath("$.email").value("test@example.com"));
@@ -105,7 +113,8 @@ class UserIntegrationTest {
         mockMvc.perform(multipart("/api/users")
                 .file(userCreateRequestPart)
                 .file(profilePart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .with(csrf()))
             .andExpect(status().isBadRequest());
 
     }
@@ -129,7 +138,9 @@ class UserIntegrationTest {
         mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/{id}", userId)
                 .file(updateReqPart)
                 .file(newProfilePart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .with(csrf())
+                .with(asSelf(userId)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username").value("updateUser"))
             .andExpect(jsonPath("$.email").value("updated@example.com"));
@@ -143,6 +154,7 @@ class UserIntegrationTest {
     @DisplayName("존재하지 않는 사용자 수정 시 404가 반환되어야 한다")
     void givenNonExistingUser_whenUpdateUser_thenNotFoundReturned() throws Exception {
         // Given
+        UUID targetId = UUID.randomUUID();
         UserUpdateRequest updateRequest = new UserUpdateRequest(
             "nobody",
             "nobody@example.com",
@@ -152,9 +164,11 @@ class UserIntegrationTest {
         MockMultipartFile updateReqPart = toJsonPart("userUpdateRequest", updateRequest);
 
         // When & Then
-        mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/{id}", UUID.randomUUID())
+        mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/{id}", targetId)
                 .file(updateReqPart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .with(asSelf(targetId))
+                .with(csrf()))
             .andExpect(status().isNotFound());
     }
 
@@ -165,7 +179,9 @@ class UserIntegrationTest {
         UUID userId = registerUserAndGetId("deleteuser", "delete@example.com");
 
         // When & Then
-        mockMvc.perform(delete("/api/users/{id}", userId))
+        mockMvc.perform(delete("/api/users/{id}", userId)
+                .with(asSelf(userId))
+                .with(csrf()))
             .andExpect(status().isNoContent());
 
         boolean exists = userRepository.existsById(userId);
@@ -179,7 +195,9 @@ class UserIntegrationTest {
         UUID userId = UUID.randomUUID();
 
         // When & Then
-        mockMvc.perform(delete("/api/users/{id}", userId))
+        mockMvc.perform(delete("/api/users/{id}", userId)
+                .with(asSelf(userId))
+                .with(csrf()))
             .andExpect(status().isNotFound());
     }
 
@@ -191,7 +209,9 @@ class UserIntegrationTest {
         registerUserAndGetId("user2", "user2@example.com");
 
         // When & Then
-        mockMvc.perform(get("/api/users"))
+        mockMvc.perform(get("/api/users")
+                .with(asSelf(UUID.randomUUID()))
+                .with(csrf()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].username").exists())
@@ -202,7 +222,9 @@ class UserIntegrationTest {
     @DisplayName("등록된 사용자가 없을 경우 빈 배열이 반환되어야 한다")
     void givenNoUsersExist_whenGetUsers_thenEmptyListReturned() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/users"))
+        mockMvc.perform(get("/api/users")
+                .with(asSelf(UUID.randomUUID()))
+                .with(csrf()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(0));
     }
@@ -214,7 +236,8 @@ class UserIntegrationTest {
 
         String body = mockMvc.perform(multipart("/api/users")
                 .file(requestPart)
-                .file(profile))
+                .file(profile)
+                .with(csrf()))
             .andReturn()
             .getResponse()
             .getContentAsString();
@@ -238,6 +261,26 @@ class UserIntegrationTest {
             MediaType.IMAGE_PNG_VALUE,
             "fake-image-content".getBytes()
         );
+    }
+
+    private DiscodeitUserDetails principalFor(UUID targetId, Role role) {
+        UserDto dto = new UserDto(
+            targetId,
+            "tester",
+            "tester@example.com",
+            null,
+            true,
+            role
+        );
+        return new DiscodeitUserDetails(dto, "!qwe123");
+    }
+
+    private RequestPostProcessor asSelf(UUID userId) {
+        return user(principalFor(userId, Role.USER));
+    }
+
+    private RequestPostProcessor asAdmin() {
+        return user(principalFor(UUID.randomUUID(), Role.ADMIN));
     }
 
 }

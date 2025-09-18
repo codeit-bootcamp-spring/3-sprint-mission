@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.binaryContent.InvalidFileProcessingException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -58,7 +59,8 @@ class MessageControllerTest {
             // Given
             UUID channelId = UUID.randomUUID();
             UUID authorID = UUID.randomUUID();
-            UserDto userDto = new UserDto(authorID, "martin", "clean@code.com", null, null);
+            UserDto userDto = new UserDto(authorID, "martin", "clean@code.com", null, null,
+                Role.ADMIN);
 
             MessageCreateRequest messageCreateRequest
                 = new MessageCreateRequest("클린 코드", channelId, authorID);
@@ -125,7 +127,8 @@ class MessageControllerTest {
             UUID authorID = UUID.randomUUID();
             UUID channelId = UUID.randomUUID();
             UUID messageId = UUID.randomUUID();
-            UserDto userDto = new UserDto(authorID, "martin", "clean@code.com", null, null);
+            UserDto userDto = new UserDto(authorID, "martin", "clean@code.com", null, null,
+                Role.ADMIN);
 
             MessageUpdateRequest messageUpdateRequest = new MessageUpdateRequest("수정됨");
 

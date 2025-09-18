@@ -5,9 +5,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import com.sprint.mission.discodeit.config.TestJpaConfig;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import jakarta.persistence.EntityManager;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 public class UserRepositoryTest {
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private EntityManager em;
@@ -122,7 +120,6 @@ public class UserRepositoryTest {
         User user = new User("tester", "tester@example.com", "pw1234!!", profile);
         em.persist(profile);
         em.persist(user);
-        em.persist(new UserStatus(user, Instant.now()));
         em.flush();
         em.clear();
 
@@ -132,7 +129,6 @@ public class UserRepositoryTest {
         // Then
         assertThat(users.size()).isEqualTo(1);
         assertThat(users.get(0).getEmail()).isEqualTo("tester@example.com");
-        assertThat(users.get(0).getStatus()).isNotNull();
         assertThat(users.get(0).getProfile().getFileName()).isEqualTo(profile.getFileName());
     }
 

@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -37,9 +36,6 @@ public class MessageRepositoryTest {
 
     @Autowired
     private MessageRepository messageRepository;
-
-    @Autowired
-    private UserStatusRepository userStatusRepository;
 
     @Nested
     @DisplayName("채널 ID 기반 메시지 삭제")
@@ -107,7 +103,6 @@ public class MessageRepositoryTest {
             Message message3 = new Message("메시지 3", channel, author, null);
 
             userRepository.save(author);
-            userStatusRepository.save(new UserStatus(author, Instant.now()));
             channelRepository.save(channel);
             messageRepository.saveAll(List.of(message1, message2, message3));
 
@@ -136,7 +131,6 @@ public class MessageRepositoryTest {
             Message message3 = new Message("메시지 3", channel, author, null);
 
             userRepository.save(author);
-            userStatusRepository.save(new UserStatus(author, Instant.now()));
             channelRepository.save(channel);
             messageRepository.saveAll(List.of(message1, message2, message3));
 
@@ -159,7 +153,6 @@ public class MessageRepositoryTest {
             // Given
             User author = new User("tester", "test@example.com", "pw1234!!", null);
             userRepository.save(author);
-            userStatusRepository.save(new UserStatus(author, Instant.now()));
 
             Channel channel = new Channel(ChannelType.PUBLIC, "테스트 채널", "채널 설명");
             channelRepository.save(channel);

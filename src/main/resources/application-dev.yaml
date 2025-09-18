@@ -6,41 +6,36 @@ spring:
     activate:
       on-profile: dev
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:discodeit;MODE=POSTGRESQL
-    username: root
-    password:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: validate
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
-    defer-datasource-initialization: true
+    defer-datasource-initialization: false
 
   sql:
     init:
-      mode: always
-      encoding: UTF-8
+      mode: never
 
   aop:
     proxy-target-class: true
 
 logging:
   level:
-    root: debug
-    com.sprint.mission.discodeit: debug
-    org.hibernate.SQL: debug
-    org.hibernate.orm.jdbc.bind: trace
-    org.springframework: INFO
+    root: info
+    com.sprint.mission.discodeit: info
+    org.hibernate.SQL: off
+    org.hibernate.orm.jdbc.bind: off
+    org.springframework.security: trace
+    org.springframework.web: debug
 
 server:
   port: 8080

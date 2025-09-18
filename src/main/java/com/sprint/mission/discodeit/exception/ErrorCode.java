@@ -5,10 +5,6 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
 
-    // 사용자 상태
-    USER_STATUS_ALREADY_EXISTS("이미 UserStatus가 존재합니다."),
-    USER_STATUS_NOT_FOUND("UserStatus를 찾을 수 없습니다."),
-
     // 사용자
     EMAIL_ALREADY_EXISTS("이미 등록된 Email입니다."),
     USERNAME_ALREADY_EXISTS("이미 사용 중인 UserName입니다."),

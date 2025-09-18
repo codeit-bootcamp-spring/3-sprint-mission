@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 데이터베이스 서비스
+  postgres:
+    image: postgres:17-alpine
+    container_name: discodeit-postgres
+    restart: unless-stopped
+
+    env_file: .env
+    environment:
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+      TZ: "Asia/Seoul"
+
+    ports:
+      - "54321:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - discodeit-network
+
+  # Spring Boot 애플리케이션 서비스
+  app:
+    image: discodeit:local
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: discodeit-app
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    env_file: .env
+
+    environment:
+
+      STORAGE_TYPE: ${STORAGE_TYPE}
+
+      # 로컬 스토리지 경로(필요 시 fallback)
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH:-./.storage}
+
+      # S3 연결 정보 (.env 파일에 실제 값 보관 → 형상관리 X)
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+
+      # Presigned-URL 만료(초) – 기본 600
+      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
+
+      JVM_OPTS: ${JVM_OPTS:-}
+
+    ports:
+      - "8888:80"
+
+    volumes:
+      - app_storage:/app/.storage
+
+    networks:
+      - discodeit-network
+
+# 볼륨 정의
+volumes:
+  postgres_data:
+    driver: local
+
+  app_storage:
+    driver: local
+
+# 네트워크 정의
+networks:
+  discodeit-network:
+    driver: bridge

@@ -34,6 +34,8 @@ logging:
     com.sprint.mission.discodeit: info
     org.hibernate.SQL: off
     org.hibernate.orm.jdbc.bind: off
+    org.springframework.security: info
+    org.springframework.web: info
 
 server:
   port: 80

@@ -16,11 +16,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -228,14 +226,8 @@ public class MessageIntegrationTest {
     private UUID createUserAndGetId(String username, String email) {
         User user = new User(username, email, "!password123", null);
 
-        initializeUserStatus(user);
-
         User savedUser = userRepository.save(user);
         return savedUser.getId();
-    }
-
-    private void initializeUserStatus(User user) {
-        UserStatus userStatus = new UserStatus(user, Instant.now());
     }
 
     private UUID createChannelAndGetId(String name, String description) {

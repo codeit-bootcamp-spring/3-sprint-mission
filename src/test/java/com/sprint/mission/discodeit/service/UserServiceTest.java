@@ -10,13 +10,13 @@ import static org.mockito.BDDMockito.then;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.EmailAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.Optional;
@@ -29,6 +29,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService 단위 테스트")
@@ -37,13 +39,15 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private UserStatusRepository userStatusRepository;
-    @Mock
     private UserMapper userMapper;
     @Mock
     private BinaryContentRepository binaryContentRepository;
     @Mock
     private BinaryContentStorage binaryContentStorage;
+    @Mock
+    private SessionRegistry sessionRegistry;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private BasicUserService userService;
@@ -52,7 +56,6 @@ class UserServiceTest {
     @DisplayName("테스트 환경 설정 확인")
     void setUp() {
         assertNotNull(userRepository);
-        assertNotNull(userStatusRepository);
         assertNotNull(userMapper);
         assertNotNull(binaryContentRepository);
         assertNotNull(binaryContentStorage);
@@ -73,11 +76,13 @@ class UserServiceTest {
 
             UserCreateRequest request = new UserCreateRequest(username, email, password);
             User savedUser = new User(username, email, password, null);
-            UserDto expectedDto = new UserDto(UUID.randomUUID(), username, email, null, null);
+            UserDto expectedDto = new UserDto(UUID.randomUUID(), username, email, null, null,
+                Role.ADMIN);
 
             given(userRepository.existsByEmail(email)).willReturn(false);
             given(userRepository.existsByUsername(username)).willReturn(false);
             given(userRepository.save(any(User.class))).willReturn(savedUser);
+            given(sessionRegistry.getAllPrincipals()).willReturn(java.util.List.of());
             given(userMapper.toDto(any(User.class))).willReturn(expectedDto);
 
             // When
@@ -136,7 +141,8 @@ class UserServiceTest {
 
             UserUpdateRequest request = new UserUpdateRequest(newUsername, newEmail, newPassword);
             User existingUser = new User("oldUser", "old@user.com", "!password123", null);
-            UserDto expectedDto = new UserDto(userId, newUsername, newEmail, null, null);
+            UserDto expectedDto = new UserDto(userId, newUsername, newEmail, null, true,
+                Role.ADMIN);
 
             given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
             given(userRepository.existsByEmail(newEmail)).willReturn(false);
