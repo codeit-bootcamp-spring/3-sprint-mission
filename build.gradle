@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '2.0-M9'
+version = '2.1-M10'
 
 test {
     finalizedBy jacocoTestReport
@@ -65,6 +65,9 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.security:spring-security-test'
+
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+
 
 }
 

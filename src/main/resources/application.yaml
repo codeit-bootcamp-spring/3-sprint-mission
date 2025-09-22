@@ -59,3 +59,11 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
+
+jwt:
+  access-token:
+    secret: change-me-access-secret-for-dev-only
+    exp: 900000        # 15분(ms)
+  refresh-token:
+    secret: change-me-refresh-secret-for-dev-only
+    exp: 3600000       # 1시간(ms)

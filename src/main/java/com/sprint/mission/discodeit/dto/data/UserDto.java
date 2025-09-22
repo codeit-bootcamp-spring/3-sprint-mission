@@ -5,22 +5,33 @@ import com.sprint.mission.discodeit.entity.User;
 import java.util.UUID;
 
 public record UserDto(
-    UUID id,
-    String username,
-    String email,
-    BinaryContentDto profile,
-    Boolean online,
-    Role role
+        UUID id,
+        String username,
+        String email,
+        BinaryContentDto profile,
+        Boolean online,
+        Role role
 ) {
 
     public static UserDto from(User user, boolean online) {
         return new UserDto(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getProfile() != null ? BinaryContentDto.from(user.getProfile()) : null,
-            online,
-            user.getRole()
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfile() != null ? BinaryContentDto.from(user.getProfile()) : null,
+                online,
+                user.getRole()
+        );
+    }
+
+    public UserDto withOnline(boolean online) {
+        return new UserDto(
+                this.id,
+                this.username,
+                this.email,
+                this.profile,
+                online,
+                this.role
         );
     }
 }

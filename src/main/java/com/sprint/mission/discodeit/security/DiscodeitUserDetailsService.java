@@ -19,7 +19,6 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final SessionUtils sessionUtils;
 
     @Override
     @Transactional(readOnly = true)
@@ -27,16 +26,16 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
         log.debug("로그인 시도한 사용자: {}", username);
 
         User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> {
-                log.error("해당 사용자를 찾을 수 없습니다: {}", username);
-                return new UsernameNotFoundException(username + " 사용자를 찾을 수 없습니다.");
-            });
+                .orElseThrow(() -> {
+                    log.error("해당 사용자를 찾을 수 없습니다: {}", username);
+                    return new UsernameNotFoundException(username + " 사용자를 찾을 수 없습니다.");
+                });
 
         if (user.getProfile() != null) {
             user.getProfile().getFileName();
         }
 
-        UserDto userDto = userMapper.toDto(user, sessionUtils);
+        UserDto userDto = userMapper.toDto(user);
         return new DiscodeitUserDetails(userDto, user.getPassword());
     }
 }
