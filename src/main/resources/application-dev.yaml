@@ -17,6 +17,14 @@ logging:
     # Spring Security 관련 디버그 로그 활성화
     org.springframework.security: trace
     # Spring Web 관련 디버그 로그 활성화
-    org.springframework.web: DEBUG
+    org.springframework.web: info
     # 애플리케이션 패키지 디버그 로그 활성화
-    com.sprint.mission.discodeit: DEBUG
+    com.sprint.mission.discodeit: info
+# JWT 설정
+jwt:
+  access-token:
+    secret: r-9o3FjVWdLUbsr4X2zmT35R4RIzw-Cct9oaaJSIQ0U
+    exp: 900000        # 15분(ms)
+  refresh-token:
+    secret: inVTlzehODZspM28GsazDrQpe3auJnC5lfNoYcwotoE
+    exp: 3600000       # 1시간(ms)

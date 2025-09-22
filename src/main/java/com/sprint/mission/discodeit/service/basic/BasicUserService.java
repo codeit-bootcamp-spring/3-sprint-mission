@@ -114,7 +114,7 @@ public class BasicUserService implements UserService {
             return binaryContent;
         }).orElse(null);
 
-        String newPassword = userUpdateRequest.newPassword();
+        String newPassword = passwordEncoder.encode(userUpdateRequest.newPassword());
         user.update(newUsername, newEmail, newPassword, nullableProfile);
 
         return userMapper.toDto(user);

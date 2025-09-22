@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
                         "잘못된 요청입니다.",
                         Map.of("message", message),
                         ex.getClass().getSimpleName(),
-                        403,
+                        400,
                         Instant.now()
                         ));
     }

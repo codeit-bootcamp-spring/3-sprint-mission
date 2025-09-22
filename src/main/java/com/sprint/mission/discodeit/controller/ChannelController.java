@@ -121,7 +121,7 @@ public class ChannelController {
             required = true,
             schema = @Schema(type = "string", format = "uuid")
     )
-    @PutMapping("/{channelId}")
+    @PatchMapping("/{channelId}")
     public ResponseEntity<ChannelDto> update(@PathVariable("channelId") UUID channelId,
                                              @RequestBody PublicChannelUpdateRequest request) {
 
