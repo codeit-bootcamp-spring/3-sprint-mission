@@ -1,14 +1,13 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.awt.print.Pageable;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -17,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -38,7 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
 @RestController
-public class MessageController {
+public class MessageController implements MessageApi {
 
     private final MessageService messageService;
 
@@ -46,6 +46,7 @@ public class MessageController {
      * 메시지 보내기
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Override
     public ResponseEntity<MessageDto> create(
             @RequestPart("messageCreateRequest") @Valid MessageCreateRequest messageCreateRequest,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
@@ -80,6 +81,7 @@ public class MessageController {
      * 메시지 수정
      */
     @PatchMapping(path = "/{messageId}")
+    @Override
     public ResponseEntity<MessageDto> update(
             @PathVariable("messageId") UUID messageId,
             @RequestBody @Valid MessageUpdateRequest request
@@ -97,6 +99,7 @@ public class MessageController {
      * 메시지 삭제
      */
     @DeleteMapping(path = "/{messageId}")
+    @Override
     public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
         log.info("메시지 삭제 요청: id={}", messageId);
 
@@ -111,6 +114,7 @@ public class MessageController {
      * 특정 채널의 메시지 목록 조회
      */
     @GetMapping
+    @Override
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
         @RequestParam("channelId") UUID channelId,
         @RequestParam(value = "cursor", required=false) Instant cursor,

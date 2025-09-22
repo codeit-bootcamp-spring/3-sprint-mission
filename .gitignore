@@ -45,8 +45,8 @@ bin/
 ### file
 file-data-map/
 .discodeit/
-**/resources/static/
 
-logs/
+.logs/
 .env
 **/src/main/resources/application-dev.yaml
+discodeit.env

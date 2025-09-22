@@ -21,15 +21,15 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
-import java.awt.print.Pageable;
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -110,6 +110,7 @@ public class BasicMessageService implements MessageService {
         return pageResponseMapper.fromSlice(slice, nextCursor);
     }
 
+    @PreAuthorize("principal.userDto.id == @basicMessageService.find(#messageId).author.id")
     @Transactional
     @Override
     public MessageDto update(UUID messageId, MessageUpdateRequest request) {
@@ -125,6 +126,7 @@ public class BasicMessageService implements MessageService {
         return messageMapper.toDto(message);
     }
 
+    @PreAuthorize("principal.userDto.id == @basicMessageService.find(#messageId).author.id")
     @Transactional
     @Override
     public void delete(UUID messageId) {

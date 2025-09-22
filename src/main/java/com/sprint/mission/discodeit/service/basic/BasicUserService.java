@@ -6,24 +6,21 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
-
-import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -31,10 +28,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     //
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
-    private final UserStatusRepository userStatusRepository;
 
     private final UserMapper userMapper;
 
@@ -49,10 +46,11 @@ public class BasicUserService implements UserService {
         // 프로필 처리
         BinaryContent nullableProfile = createProfile(optionalProfileCreateRequest);
 
+        // 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(userCreateRequest.password());
+
         // 유저 생성 및 저장
-        User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), nullableProfile);
-        Instant now = Instant.now();
-        UserStatus userStatus = new UserStatus(user, now);
+        User user = new User(userCreateRequest.username(), userCreateRequest.email(), encodedPassword, nullableProfile);
 
         userRepository.save(user);
 
@@ -101,6 +99,7 @@ public class BasicUserService implements UserService {
                 .toList();
     }
 
+    @PreAuthorize("principal.userDto.id == #userId")
     @Transactional
     @Override
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
@@ -128,13 +127,16 @@ public class BasicUserService implements UserService {
                 .orElse(null);
 
         String newPassword = userUpdateRequest.newPassword();
-        user.update(newUsername, newEmail, newPassword, nullableProfile);
+        String encodedPassword = Optional.ofNullable(newPassword).map(passwordEncoder::encode)
+            .orElse(user.getPassword());
+        user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
         log.info("사용자 수정 완료: id={}", userId);
 
         return userMapper.toDto(user);
     }
 
+    @PreAuthorize("principal.userDto.id == #userId")
     @Transactional
     @Override
     public void delete(UUID userId) {

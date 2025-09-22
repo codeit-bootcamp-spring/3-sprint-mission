@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.service.ChannelService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -27,8 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/channels")
 @RestController
-@Tag(name = "Channels")
-public class ChannelController {
+public class ChannelController implements ChannelApi {
 
     private final ChannelService channelService;
 
@@ -36,6 +35,7 @@ public class ChannelController {
      * 공개 채널 생성
      */
     @PostMapping(path = "/public")
+    @Override
     public ResponseEntity<ChannelDto> create(@RequestBody @Valid PublicChannelCreateRequest request) {
         log.info("공개 채널 생성 요청: {}", request);
 
@@ -50,6 +50,7 @@ public class ChannelController {
      * 비공개 채널 생성
      */
     @PostMapping(path = "/private")
+    @Override
     public ResponseEntity<ChannelDto> create(@RequestBody @Valid PrivateChannelCreateRequest request) {
         log.info("비공개 채널 생성 요청: {}", request);
 
@@ -64,6 +65,7 @@ public class ChannelController {
      * 공개 채널 정보 수정
      */
     @PatchMapping(path = "/{channelId}")
+    @Override
     public ResponseEntity<ChannelDto> update(
             @PathVariable("channelId") UUID channelId,
             @RequestBody @Valid PublicChannelUpdateRequest request
@@ -81,6 +83,7 @@ public class ChannelController {
      * 채널 삭제
      */
     @DeleteMapping(path = "/{channelId}")
+    @Override
     public ResponseEntity<Void> delete(@PathVariable("channelId") UUID channelId) {
         log.info("채널 삭제 요청: id={}", channelId);
 
@@ -95,6 +98,7 @@ public class ChannelController {
      * 특정 사용자가 볼 수 있는 모든 채널 목록 조회
      */
     @GetMapping
+    @Override
     public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
         log.info("사용자별 채널 목록 조회 요청: userId={}", userId);
 

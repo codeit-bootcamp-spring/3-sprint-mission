@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -33,16 +35,16 @@ public class User extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_id", columnDefinition = "uuid")
     private BinaryContent profile;
 
-    @JsonManagedReference   // Jackson을 통해 직렬화하는 경우 발생하는 순환 참조를 방지
-    @Setter(AccessLevel.PROTECTED)
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     public User(String username, String email, String password, BinaryContent profile) {
         this.username = Objects.requireNonNull(username, "Username must not be null");
         this.email = Objects.requireNonNull(email, "Email must not be null");
         this.password = Objects.requireNonNull(password, "Password must not be null");
         this.profile = profile;
+        this.role = Role.USER;
     }
 
     public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
@@ -57,6 +59,12 @@ public class User extends BaseUpdatableEntity {
         }
         if (newProfile != null) {
             this.profile = newProfile;
+        }
+    }
+
+    public void updateRole(Role newRole) {
+        if (newRole != null && !newRole.equals(this.role)) {
+            this.role = newRole;
         }
     }
 

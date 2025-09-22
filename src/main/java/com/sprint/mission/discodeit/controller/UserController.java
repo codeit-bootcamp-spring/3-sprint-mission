@@ -1,14 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
@@ -24,7 +21,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,16 +43,15 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @RestController
-@Tag(name = "Users")
-public class UserController {
+public class UserController implements UserApi {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
 
     /**
      * 신규 유저 생성 요청
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Override
     public ResponseEntity<UserDto> create(
             @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
@@ -81,6 +76,7 @@ public class UserController {
             path = "/{userId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
+    @Override
     public ResponseEntity<UserDto> update(
             @PathVariable("userId") UUID userId,
             @RequestPart("userUpdateRequest") @Valid UserUpdateRequest request,
@@ -102,6 +98,7 @@ public class UserController {
      * 유저 삭제
      */
     @DeleteMapping(path = "/{userId}")
+    @Override
     public ResponseEntity<Void> delete(@PathVariable("userId") UUID userId) {
         userService.delete(userId);
         return ResponseEntity.noContent().build();
@@ -111,20 +108,9 @@ public class UserController {
      * 전체 유저 조회
      */
     @GetMapping
+    @Override
     public ResponseEntity<List<UserDto>> findAll() {
         return ResponseEntity.ok(userService.findAll());
-    }
-
-    /**
-     * 온라인 상태(마지막 활동 시간) 업데이트
-     */
-    @PatchMapping(path = "/{userId}/userStatus")
-    public ResponseEntity<UserStatusDto> updateStatus(
-            @PathVariable("userId") UUID userId,
-            @RequestBody @Valid UserStatusUpdateRequest request
-    ) {
-        UserStatusDto updatedStatus = userStatusService.updateByUserId(userId, request);
-        return ResponseEntity.ok(updatedStatus);
     }
 
     /**
