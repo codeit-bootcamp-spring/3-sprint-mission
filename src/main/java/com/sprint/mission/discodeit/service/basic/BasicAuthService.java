@@ -1,19 +1,26 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.nimbusds.jose.JOSEException;
+import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.jwt.JwtDto;
+import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
 import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.auth.InvalidTokenException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
-import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,6 +36,9 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final SessionRegistry sessionRegistry;
+    private final JwtRegistry jwtRegistry;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final DiscodeitUserDetailsService userDetailsService;
 
     @Override
     public UserDto getCurrentUserInfo(UserDetails userDetails) {
@@ -64,6 +74,43 @@ public class BasicAuthService implements AuthService {
         );
     }
 
+    @Override
+    public JwtDto refreshToken(String refreshToken, HttpServletResponse response) {
+
+        if (refreshToken == null || !jwtTokenProvider.validateRefreshToken(refreshToken)) {
+            throw new InvalidTokenException("유효하지 않은 refreshToken입니다");
+        }
+
+        String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
+
+        DiscodeitUserDetails userDetails =
+            (DiscodeitUserDetails) userDetailsService.loadUserByUsername(username);
+
+        UserDto userDto = userDetails.getUserDto();
+
+        try {
+            String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
+            String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+
+            jwtTokenProvider.expireRefreshCookie(response);
+            jwtTokenProvider.addRefreshCookie(response, newRefreshToken);
+
+            log.debug("[AuthService] 토큰 재발급 완료 - username: {}", username);
+
+            JwtInformation newInfo = new JwtInformation(userDto, newAccessToken, newRefreshToken);
+
+            jwtRegistry.rotateJwtInformation(refreshToken, newInfo);
+            jwtTokenProvider.addRefreshCookie(response, newRefreshToken);
+
+            return JwtDto.of(userDto, newAccessToken);
+
+        } catch (JOSEException e) {
+            log.error("[AuthService] 토큰 생성 중 오류 발생", e);
+            throw new InvalidTokenException("토큰 생성 중 오류가 발생했습니다");
+
+        }
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     @Override
@@ -84,8 +131,8 @@ public class BasicAuthService implements AuthService {
         log.info("기존 권한: {}, 새 권한: {}", oldRole, newRole);
 
         if (oldRole != newRole) {
-            log.info("권한이 변경되었으므로 해당 사용자의 모든 세션을 무효화합니다.");
-            invalidateUserSessions(username);
+            log.info("권한이 변경되었으므로 해당 사용자의 모든 토큰을 무효화합니다.");
+            jwtRegistry.invalidateJwtInformationByUserId(userId);
         }
 
         user.updateRole(newRole);
@@ -96,45 +143,4 @@ public class BasicAuthService implements AuthService {
         return userMapper.toDto(updatedUser);
     }
 
-    @Override
-    public void invalidateUserSessions(String username) {
-
-        try {
-
-            log.info("[UserService] 세션 무효화 시작");
-            log.info("[UserService] 대상 사용자: {}", username);
-
-            List<Object> allPrincipals = sessionRegistry.getAllPrincipals();
-            log.info("[UserService] 전체 로그인된 사용자 수: {}", allPrincipals.size());
-
-            for (Object principal : allPrincipals) {
-                UserDetails userDetails = (UserDetails) principal;
-                String principalName = userDetails.getUsername();
-
-                log.info("[UserService] 확인 중인 Principal: {} (username: {})", principal,
-                    principalName);
-
-                if (username.equals(principalName)) {
-                    List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal,
-                        false);
-                    log.info("[UserService] 대상 사용자 발견! 활성 세션 수: {}", sessions.size());
-
-                    for (SessionInformation session : sessions) {
-                        log.info("[UserService] 세션 무효화 중 - 세션ID: {}", session.getSessionId());
-                        session.expireNow();
-                        log.info("[UserService] 세션 무효화 완료 - 만료됨: {}", session.isExpired());
-                    }
-
-                    log.info("[UserService] 사용자 '{}'의 모든 세션({}개)이 무효화되었습니다.", username,
-                        sessions.size());
-                    break;
-                }
-            }
-
-            log.info("[UserService] 세션 무효화 완료");
-        } catch (Exception e) {
-            log.error("[UserService] 세션 무효화 중 오류 발생: {}", e.getMessage());
-            e.printStackTrace();
-        }
-    }
 }

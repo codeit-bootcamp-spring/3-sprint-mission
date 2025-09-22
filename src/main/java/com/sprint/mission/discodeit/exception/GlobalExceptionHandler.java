@@ -33,6 +33,8 @@ public class GlobalExceptionHandler {
                  "InvalidUsernameOrPasswordException", "InvalidUserUpdateInputException",
                  "InvalidMessageContentException" -> HttpStatus.BAD_REQUEST;
 
+            case "InvalidTokenException" -> HttpStatus.UNAUTHORIZED;
+
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
 

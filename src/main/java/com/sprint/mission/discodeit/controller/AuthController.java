@@ -1,17 +1,19 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.jwt.JwtDto;
 import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,28 +36,20 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<UserDto> getCurrentUser(
-        @AuthenticationPrincipal UserDetails userDetails
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtDto> refreshToken(
+        @CookieValue(
+            name = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
+            required = false
+        ) String refreshToken,
+        HttpServletResponse response
     ) {
 
-        log.debug("[AuthController] 세션 기반 사용자 정보 조회 요청(me) 들어옴.");
+        log.debug("[AuthController] 리프레시 토큰 재발급 요청");
 
-        if (userDetails == null) {
-            log.debug("[AuthController] 비인증 사용자 (인증 정보 null)");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+        JwtDto jwtDto = authService.refreshToken(refreshToken, response);
 
-        UserDto userResponse = authService.getCurrentUserInfo(userDetails);
-
-        if (userResponse == null) {
-            log.debug("[AuthController] AuthService 에서 사용자 정보를 가져올 수 없음");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
-
-        log.debug("[AuthController] 사용자 정보 조회 완료: {}", userResponse);
-
-        return ResponseEntity.ok(userResponse);
+        return ResponseEntity.ok(jwtDto);
     }
 
     @PutMapping("/role")

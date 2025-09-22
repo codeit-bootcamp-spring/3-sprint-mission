@@ -2,8 +2,10 @@ package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.auth.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.auth.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.auth.handler.LoginSuccessHandler;
-import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetailsService;
+import com.sprint.mission.discodeit.auth.handler.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.auth.handler.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.auth.handler.JwtLogoutHandler;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -27,9 +30,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Slf4j
@@ -73,18 +77,18 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(
         HttpSecurity http,
         DaoAuthenticationProvider authenticationProvider,
-        LoginSuccessHandler loginSuccessHandler,
+        JwtAuthenticationFilter jwtAuthenticationFilter,
+        JwtLoginSuccessHandler jwtLoginSuccessHandler,
+        JwtLogoutHandler jwtLogoutHandler,
         LoginFailureHandler loginFailureHandler,
-        SessionRegistry sessionRegistry,
-        CustomAccessDeniedHandler customAccessDeniedHandler,
-        DiscodeitUserDetailsService discodeitUserDetailsService) throws Exception {
+        CustomAccessDeniedHandler customAccessDeniedHandler) throws Exception {
 
         log.debug("[SecurityConfig] FilterChain 구성 시작 - Form 기반 로그인 사용");
 
         http
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/").permitAll()
@@ -95,35 +99,29 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/logout").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                 .anyRequest().authenticated()
             )
-            .sessionManagement(management -> management
-                .sessionConcurrency(concurrency -> concurrency
-                    .maximumSessions(1)
-                    .maxSessionsPreventsLogin(false)
-                    .sessionRegistry(sessionRegistry)
-                )
-            )
-            .rememberMe(remember -> remember
-                .rememberMeParameter("remember-me")
-                .tokenValiditySeconds(60)
-                .alwaysRemember(false)
-                .userDetailsService(discodeitUserDetailsService)
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .formLogin(login -> login
                 .loginProcessingUrl("/api/auth/login")
-                .successHandler(loginSuccessHandler)
+                .successHandler(jwtLoginSuccessHandler)
                 .failureHandler(loginFailureHandler)
+                .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+                .addLogoutHandler(jwtLogoutHandler)
             )
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
                 .accessDeniedHandler(customAccessDeniedHandler)
             )
-            .authenticationProvider(authenticationProvider);
+            .authenticationProvider(authenticationProvider)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

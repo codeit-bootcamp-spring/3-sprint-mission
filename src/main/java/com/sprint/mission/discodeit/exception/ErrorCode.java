@@ -28,7 +28,12 @@ public enum ErrorCode {
     FILE_PROCESSING_FAILED("이미지 처리 중 오류가 발생했습니다."),
 
     // 로그인
-    INVALID_USERNAME_OR_PASSWORD("username 또는 password가 틀렸습니다.");
+    INVALID_USERNAME_OR_PASSWORD("username 또는 password가 틀렸습니다."),
+
+    // 토큰
+    INVALID_JWT_TOKEN("유효하지 않은 토큰입니다."),
+    FAILED_TOKEN_GENERATED("토큰 생성에 실패하였습니다"),
+    INVALID_PRINCIPAL("잘못된 형태의 Principal입니다");
 
     private final String message;
 

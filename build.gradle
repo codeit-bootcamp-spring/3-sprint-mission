@@ -18,7 +18,7 @@ jacocoTestReport {
 }
 
 group = 'com.sprint.mission'
-version = '2.0-M9'
+version = '2.1-M10'
 
 java {
     toolchain {
@@ -61,6 +61,9 @@ dependencies {
     implementation 'org.slf4j:slf4j-api'
 
     implementation 'software.amazon.awssdk:s3:2.31.7'
+
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+
 }
 
 def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile

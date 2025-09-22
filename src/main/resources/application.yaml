@@ -98,3 +98,12 @@ info:
   multipart:
     max-file-size: ${spring.servlet.multipart.max-file-size}
     max-request-size: ${spring.servlet.multipart.max-request-size}
+
+jwt:
+  access-token:
+    secret: 6NSV0B3HxJD9AwvVZ4BKtmdRJ5GoNobT7yO72b_GENo
+    exp: 900000
+  refresh-token:
+    secret: Avz2YMsZ2ze5hAP3uU7rH6Yi40IbJwpDA8NVTWM4ezY
+    exp: 3600000
+  max-concurrent-session: 1

@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
@@ -13,6 +12,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
@@ -21,7 +21,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +35,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
-    private final SessionRegistry sessionRegistry;
+    private final JwtRegistry jwtRegistry;
 
     @Transactional
     @Override
@@ -155,8 +154,8 @@ public class BasicUserService implements UserService {
             })
             .orElse(null);
 
-        String newPassword = userUpdateRequest.newPassword();
-        user.update(newUsername, newEmail, newPassword, nullableProfile);
+        String encodedNewPassword = passwordEncoder.encode(userUpdateRequest.newPassword());
+        user.update(newUsername, newEmail, encodedNewPassword, nullableProfile);
 
         log.info("사용자 수정 완료 - userId: {}, username: {}, email: {}",
             userId, newUsername, newEmail);
@@ -187,17 +186,8 @@ public class BasicUserService implements UserService {
             return false;
         }
 
-        boolean isOnline = sessionRegistry.getAllPrincipals().stream()
-            .filter(DiscodeitUserDetails.class::isInstance)
-            .map(DiscodeitUserDetails.class::cast)
-            .filter(userDetails -> userId.equals(userDetails.getUserDto().id()))
-            .anyMatch(userDetails ->
-                sessionRegistry.getAllSessions(userDetails, false).stream()
-                    .anyMatch(session -> !session.isExpired())
-            );
+        return jwtRegistry.hasActiveJwtInformationByUserId(userId);
 
-        log.debug("[BasicUserService] 사용자 {} 온라인 상태: {}", userId, isOnline);
-        return isOnline;
     }
 
     private UserDto setOnlineStatus(UserDto userDto) {
