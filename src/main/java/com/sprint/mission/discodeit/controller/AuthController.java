@@ -1,11 +1,16 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
+import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +34,7 @@ public class AuthController implements AuthApi {
 
     private final AuthService authService;
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * CSRF 토큰 발급 API
@@ -45,12 +53,21 @@ public class AuthController implements AuthApi {
         return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-        log.info("내 정보 조회 요청");
-        UUID userId = userDetails.getUserDto().id();
-        UserDto userDto = userService.find(userId);
-        return ResponseEntity.ok(userDto);
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtDto> refresh(@CookieValue("REFRESH_TOKEN") String refreshToken,
+        HttpServletResponse response) {
+        log.info("토큰 리프레시 요청");
+        JwtInformation jwtInformation = authService.refreshToken(refreshToken);
+        Cookie refreshCookie = jwtTokenProvider.genereateRefreshTokenCookie(
+            jwtInformation.getRefreshToken());
+        response.addCookie(refreshCookie);
+
+        JwtDto body = new JwtDto(
+            jwtInformation.getUserDto(),
+            jwtInformation.getAccessToken()
+        );
+
+        return ResponseEntity.ok(body);
     }
 
     @PutMapping("/role")
