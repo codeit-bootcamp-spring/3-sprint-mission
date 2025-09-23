@@ -10,7 +10,7 @@ public enum ErrorCode {
     PRIVATE_CHANNEL_UPDATE("PRIVATE 채널은 업데이트 할 수 없습니다."),
 
     MESSAGE_NOT_FOUND("메시지가 존재하지 않습니다."),
-    
+
     AUTHOR_NOT_FOUND("작성자가 존재하지 않습니다."),
 
     WRONG_PASSWORD("비밀번호가 올바르지 않습니다."),
@@ -21,7 +21,11 @@ public enum ErrorCode {
     DUPLICATE_READSTATUS("해당 유저id, 채널 id에 이미 존재하는 ReadStatus 입니다."),
 
     USERSTATUS_NOT_FOUND("UserStatus가 존재하지 않습니다."),
-    DUPLICATE_USERSTATUS("해당 UserStatus가 이미 존재합니다.");
+    DUPLICATE_USERSTATUS("해당 UserStatus가 이미 존재합니다."),
+
+    NOTIFICATION_NOT_FOUND("알림이 존재하지 않습니다."),
+    NOTIFICATION_ACCESS_DENIED("해당 알림에 접근 권한이 없습니다."),
+    ;
 
 
     private final String message;

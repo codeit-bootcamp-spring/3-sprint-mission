@@ -72,12 +72,13 @@ CREATE TABLE message_attachments
 -- ReadStatus
 CREATE TABLE read_statuses
 (
-    id           uuid PRIMARY KEY,
-    created_at   timestamp with time zone NOT NULL,
-    updated_at   timestamp with time zone,
-    user_id      uuid                     NOT NULL,
-    channel_id   uuid                     NOT NULL,
-    last_read_at timestamp with time zone NOT NULL,
+    id                   uuid PRIMARY KEY,
+    created_at           timestamp with time zone NOT NULL,
+    updated_at           timestamp with time zone,
+    user_id              uuid                     NOT NULL,
+    channel_id           uuid                     NOT NULL,
+    last_read_at         timestamp with time zone NOT NULL,
+    notification_enabled boolean                  NOT NULL,
     UNIQUE (user_id, channel_id)
 );
 
@@ -133,3 +134,23 @@ ALTER TABLE message_attachments
         FOREIGN KEY (message_id)
             REFERENCES messages (id)
             ON DELETE CASCADE;
+
+ALTER TABLE binary_contents
+    ADD COLUMN updated_at timestamp with time zone;
+ALTER TABLE binary_contents
+    ADD COLUMN status varchar(20) NOT NULL DEFAULT 'PROCESSING';
+
+CREATE TABLE notifications
+(
+    id          UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    receiver_id UUID        NOT NULL,
+    title       TEXT        NOT NULL,
+    content     TEXT        NOT NULL,
+    confirmed   BOOLEAN     NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT fk_notifications_user
+        FOREIGN KEY (receiver_id)
+            REFERENCES users (id)
+            ON DELETE CASCADE
+);
