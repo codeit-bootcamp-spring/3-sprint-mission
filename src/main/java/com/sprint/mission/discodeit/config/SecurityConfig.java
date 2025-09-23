@@ -1,21 +1,25 @@
 package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.dto.response.ErrorResponse;
-import com.sprint.mission.discodeit.security.CustomAccessDeniedHandler;
+import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.redis.RedisLockProvider;
+import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.time.Instant;
-import java.util.Map;
-import java.util.function.Supplier;
-import javax.sql.DataSource;
-import lombok.RequiredArgsConstructor;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.jwt.RedisJwtRegistry;
+import java.util.List;
+import java.util.stream.IntStream;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
@@ -26,96 +30,83 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
-import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
-import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
-    private final LoginFailureHandler loginFailureHandler;
-    private final CustomAccessDeniedHandler accessDeniedHandler;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final JwtLogoutHandler jwtLogoutHandler;
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            JwtLoginSuccessHandler jwtLoginSuccessHandler,
+            LoginFailureHandler loginFailureHandler,
+            ObjectMapper objectMapper,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            JwtLogoutHandler jwtLogoutHandler
+    )
+            throws Exception {
         http
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                )
                 .formLogin(login -> login
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(jwtLoginSuccessHandler)
                         .failureHandler(loginFailureHandler)
-                        .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .addLogoutHandler(jwtLogoutHandler)
                         .logoutSuccessHandler(
-                                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
-                        )
-                        .permitAll()
-                )
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler() {
-                            @Override
-                            public void handle(HttpServletRequest request, HttpServletResponse response,
-                                               Supplier<CsrfToken> csrfToken) {
-                                super.handle(request, response, csrfToken);
-                                csrfToken.get();
-                            }
-                        })
-                        .ignoringRequestMatchers(
-                                new AntPathRequestMatcher("/api/auth/login", "POST"),
-                                new AntPathRequestMatcher("/api/auth/logout", "POST"),
-                                new AntPathRequestMatcher("/api/auth/refresh", "POST"),
-                                new AntPathRequestMatcher("/api/users", "POST")
-                        )
+                                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/favicon.ico",
-                                "/index-*.js",
-                                "/index-*.css",
-                                "/assets/**",
-
-                                "/api/auth/login",
-                                "/api/auth/logout",
-                                "/api/auth/csrf-token",
-
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/api/auth/refresh"
+                                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/sse"),
+                                new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(authenticationEntryPoint())
-                        .accessDeniedHandler(accessDeniedHandler)
+                        .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+                        .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper))
                 )
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, LogoutFilter.class);
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                // Add JWT authentication filter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        ;
         return http.build();
+    }
+
+    @Bean
+    public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
+        return args -> {
+            int filterSize = filterChain.getFilters().size();
+            List<String> filterNames = IntStream.range(0, filterSize)
+                    .mapToObj(idx -> String.format("\t[%s/%s] %s", idx + 1, filterSize,
+                            filterChain.getFilters().get(idx).getClass()))
+                    .toList();
+            log.debug("Debug Filter Chain...\n{}", String.join(System.lineSeparator(), filterNames));
+        };
     }
 
     @Bean
@@ -124,31 +115,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationEntryPoint authenticationEntryPoint() {
-        return (request, response, authException) -> {
-            ErrorResponse errorResponse = new ErrorResponse(
-                    Instant.now(),
-                    "UNAUTHORIZED",
-                    "로그인이 필요합니다.",
-                    Map.of("path", request.getRequestURI()),
-                    authException.getClass().getSimpleName(),
-                    HttpServletResponse.SC_UNAUTHORIZED
-            );
-
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write(
-                    new ObjectMapper().writeValueAsString(errorResponse)
-            );
-        };
-    }
-
-    @Bean
     public RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role(Role.ADMIN.name())
+                .implies(Role.USER.name(), Role.CHANNEL_MANAGER.name())
 
-        RoleHierarchy hierarchy = RoleHierarchyImpl.fromHierarchy(
-                "ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER");
-        return hierarchy;
+                .role(Role.CHANNEL_MANAGER.name())
+                .implies(Role.USER.name())
+
+                .build();
     }
 
     @Bean
@@ -159,29 +134,13 @@ public class SecurityConfig {
         return handler;
     }
 
-
     @Bean
-    public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
-        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
-        tokenRepository.setDataSource(dataSource);
-
-        return tokenRepository;
-    }
-
-
-    @Bean
-    public RememberMeServices rememberMeServices(PersistentTokenRepository repo,
-                                                 UserDetailsService userDetailsService) {
-        PersistentTokenBasedRememberMeServices svc =
-                new PersistentTokenBasedRememberMeServices(
-                        "discodeit-remember-me-key",
-                        userDetailsService,
-                        repo
-                );
-        svc.setParameter("remember-me");
-        svc.setTokenValiditySeconds(24 * 60 * 60);
-        svc.setAlwaysRemember(false);
-        return svc;
+    public JwtRegistry jwtRegistry(
+            JwtTokenProvider jwtTokenProvider,
+            ApplicationEventPublisher eventPublisher,
+            RedisTemplate<String, Object> redisTemplate,
+            RedisLockProvider redisLockProvider
+    ) {
+        return new RedisJwtRegistry(3, jwtTokenProvider, eventPublisher, redisTemplate, redisLockProvider);
     }
 }
-

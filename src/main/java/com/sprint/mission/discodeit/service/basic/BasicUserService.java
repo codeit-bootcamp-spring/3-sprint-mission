@@ -5,16 +5,14 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
-import com.sprint.mission.discodeit.event.payload.RoleUpdatedEvent;
-import com.sprint.mission.discodeit.exception.user.UserAlreadyExistException;
+import com.sprint.mission.discodeit.event.message.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.Optional;
@@ -29,196 +27,159 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
-@Slf4j
 public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtRegistry jwtRegistry;
-    private final ApplicationEventPublisher publisher;
+    private final ApplicationEventPublisher eventPublisher;
+    private final SseService sseService;
 
+    @CacheEvict(value = "users", key = "'all'")
     @Transactional
     @Override
-    @CacheEvict(value = "users", allEntries = true)
-
     public UserDto create(UserCreateRequest userCreateRequest,
                           Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-        log.info("사용자 생성 요청: username={}, email={}", userCreateRequest.username(),
-                userCreateRequest.email());
+        log.debug("사용자 생성 시작: {}", userCreateRequest);
+
         String username = userCreateRequest.username();
         String email = userCreateRequest.email();
 
         if (userRepository.existsByEmail(email)) {
-            throw new UserAlreadyExistException("email", email);
+            throw UserAlreadyExistsException.withEmail(email);
         }
         if (userRepository.existsByUsername(username)) {
-            throw new UserAlreadyExistException("username", username);
+            throw UserAlreadyExistsException.withUsername(username);
         }
 
         BinaryContent nullableProfile = optionalProfileCreateRequest
-                .map(profileRequest -> {
-                    String fileName = profileRequest.fileName();
-                    String contentType = profileRequest.contentType();
-                    byte[] bytes = profileRequest.bytes();
-
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-                            contentType);
-                    binaryContentRepository.save(binaryContent);
-
-                    publisher.publishEvent(new BinaryContentCreatedEvent(
-                            binaryContent.getId(), contentType, bytes
-                    ));
-                    log.debug("프로필 메타 저장 완료(이벤트 발행): id={}", binaryContent.getId());
-                    return binaryContent;
-                })
-                .orElse(null);
+            .map(profileRequest -> {
+                String fileName = profileRequest.fileName();
+                String contentType = profileRequest.contentType();
+                byte[] bytes = profileRequest.bytes();
+                BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+                    contentType);
+                binaryContentRepository.save(binaryContent);
+                eventPublisher.publishEvent(
+                    new BinaryContentCreatedEvent(
+                        binaryContent, binaryContent.getCreatedAt(), bytes
+                    )
+                );
+                return binaryContent;
+            })
+            .orElse(null);
 
         String password = userCreateRequest.password();
         String encodedPassword = passwordEncoder.encode(password);
+
         User user = new User(username, email, encodedPassword, nullableProfile);
-
         userRepository.save(user);
-        log.info("사용자 생성 완료: id={}", user.getId());
-        return userMapper.toDto(user).withOnline(false);
+
+        UserDto dto = userMapper.toDto(user);
+
+        sseService.broadcast("users.created", dto);
+
+        log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
+        return dto;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public UserDto find(UUID userId) {
-        log.debug("사용자 조회 요청: id={}", userId);
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("사용자 조회 실패: id={}", userId);
-                    return new UserNotFoundException(userId);
-                });
-
-        boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
-        return userMapper.toDto(user).withOnline(online);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Cacheable("users")
-
-    public List<UserDto> findAll() {
-        log.debug("모든 사용자 조회 요청");
-        return userRepository.findAll().stream()
-                .map(user -> userMapper.toDto(user)
-                        .withOnline(jwtRegistry.hasActiveJwtInformationByUserId(user.getId())))
-                .toList();
-    }
-
+    @CacheEvict(value = "users", key = "'all'")
+    @PreAuthorize("principal.userDto.id == #userId")
     @Transactional
     @Override
-    @PreAuthorize("#userId == principal.id")
-    @CacheEvict(value = "users", allEntries = true)
-
-    public UserDto update(UUID userId,
-                          UserUpdateRequest userUpdateRequest,
+    public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
                           Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-
-        log.info("사용자 수정 요청: id={}, newUsername={}, newEmail={}",
-                userId, userUpdateRequest.newUsername(), userUpdateRequest.newEmail());
+        log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("사용자 수정 실패: 존재하지 않는 id={}", userId);
-                    return new UserNotFoundException(userId);
-                });
+            .orElseThrow(() -> UserNotFoundException.withId(userId));
 
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
-        String newPassword = userUpdateRequest.newPassword();
 
-        if (newUsername != null && !newUsername.isBlank() && !newUsername.equals(user.getUsername())) {
-            if (userRepository.existsByUsername(newUsername)) {
-                log.error("사용자명 중복(수정): {}", newUsername);
-                throw new UserAlreadyExistException("username", newUsername);
-            }
-        } else {
-            newUsername = user.getUsername();
+        if (userRepository.existsByEmail(newEmail)) {
+            throw UserAlreadyExistsException.withEmail(newEmail);
         }
-
-        if (newEmail != null && !newEmail.isBlank() && !newEmail.equals(user.getEmail())) {
-            if (userRepository.existsByEmail(newEmail)) {
-                log.error("이메일 중복(수정): {}", newEmail);
-                throw new UserAlreadyExistException("email", newEmail);
-            }
-        } else {
-            newEmail = user.getEmail();
-        }
-
-        String newEncodedPassword = null;
-        if (newPassword != null && !newPassword.isBlank()) {
-            newEncodedPassword = passwordEncoder.encode(newPassword);
+        if (userRepository.existsByUsername(newUsername)) {
+            throw UserAlreadyExistsException.withUsername(newUsername);
         }
 
         BinaryContent nullableProfile = optionalProfileCreateRequest
-                .map(profileRequest -> {
-                    String fileName = profileRequest.fileName();
-                    String contentType = profileRequest.contentType();
-                    byte[] bytes = profileRequest.bytes();
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-                            contentType);
-                    binaryContentRepository.save(binaryContent);
+            .map(profileRequest -> {
+                String fileName = profileRequest.fileName();
+                String contentType = profileRequest.contentType();
+                byte[] bytes = profileRequest.bytes();
+                BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+                    contentType);
+                binaryContentRepository.save(binaryContent);
+                eventPublisher.publishEvent(
+                    new BinaryContentCreatedEvent(
+                        binaryContent, binaryContent.getCreatedAt(), bytes
+                    )
+                );
+                return binaryContent;
+            })
+            .orElse(null);
 
-                    // 이벤트 발행
-                    publisher.publishEvent(new BinaryContentCreatedEvent(
-                            binaryContent.getId(), contentType, bytes
-                    ));
-                    log.debug("프로필 메타 수정 완료(이벤트 발행): id={}", binaryContent.getId());
-                    return binaryContent;
-                })
-                .orElse(null);
+        String newPassword = userUpdateRequest.newPassword();
+        String encodedPassword = Optional.ofNullable(newPassword)
+            .map(passwordEncoder::encode)
+            .orElse(user.getPassword());
 
-        user.update(newUsername, newEmail, newEncodedPassword, nullableProfile);
+        user.update(newUsername, newEmail, encodedPassword, nullableProfile);
+
+        UserDto dto = userMapper.toDto(user);
+
+        sseService.broadcast("users.updated", dto);
 
         log.info("사용자 수정 완료: id={}", userId);
-
-        boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
-        return userMapper.toDto(user).withOnline(online);
+        return dto;
     }
 
+    @CacheEvict(value = "users", key = "'all'")
+    @PreAuthorize("principal.userDto.id == #userId")
     @Transactional
     @Override
-    @PreAuthorize("#userId == principal.id")
-    @CacheEvict(value = "users", allEntries = true)
-
     public void delete(UUID userId) {
-        log.info("사용자 삭제 요청: id={}", userId);
+        log.debug("사용자 삭제 시작: id={}", userId);
 
-        if (!userRepository.existsById(userId)) {
-            log.error("삭제 실패: 존재하지 않는 사용자 id={}", userId);
-            throw new UserNotFoundException(userId);
-        }
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> UserNotFoundException.withId(userId));
+
         userRepository.deleteById(userId);
+
+        UserDto dto = userMapper.toDto(user);
+
+        sseService.broadcast("users.deleted", dto);
+
         log.info("사용자 삭제 완료: id={}", userId);
     }
 
-    @Transactional
-    public UserDto updateRole(UUID userId, Role newRole) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+    @Transactional(readOnly = true)
+    @Override
+    public UserDto find(UUID userId) {
+        log.debug("사용자 조회 시작: id={}", userId);
+        UserDto userDto = userRepository.findById(userId)
+            .map(userMapper::toDto)
+            .orElseThrow(() -> UserNotFoundException.withId(userId));
+        log.info("사용자 조회 완료: id={}", userId);
+        return userDto;
+    }
 
-        Role oldRole = user.getRole();
-        user.updateRole(newRole);
-
-        boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
-
-        log.info("사용자 권한 변경: id={}, newRole={}", userId, newRole);
-
-        UserDto dto = userMapper.toDto(user).withOnline(online);
-        publisher.publishEvent(new RoleUpdatedEvent(
-                user.getId(),
-                oldRole.name(),
-                newRole.name()
-        ));
-
-        return dto;
+    @Cacheable(value = "users", key = "'all'", unless = "#result.isEmpty()")
+    @Transactional(readOnly = true)
+    @Override
+    public List<UserDto> findAll() {
+        log.debug("모든 사용자 조회 시작");
+        List<UserDto> userDtos = userRepository.findAllWithProfile()
+            .stream()
+            .map(userMapper::toDto)
+            .toList();
+        log.info("모든 사용자 조회 완료: 총 {}명", userDtos.size());
+        return userDtos;
     }
 }

@@ -1,23 +1,14 @@
 package com.sprint.mission.discodeit.dto.data;
 
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import java.util.UUID;
 
 public record BinaryContentDto(
-        UUID id,
-        String fileName,
-        Long size,
-        String contentType,
-        String status
+    UUID id,
+    String fileName,
+    Long size,
+    String contentType,
+    BinaryContentStatus status
 ) {
 
-    public static BinaryContentDto from(BinaryContent binaryContent) {
-        return new BinaryContentDto(
-                binaryContent.getId(),
-                binaryContent.getFileName(),
-                binaryContent.getSize(),
-                binaryContent.getContentType(),
-                "PROCESSING"
-        );
-    }
 }

@@ -1,38 +1,102 @@
+version: "3.8"
+
 services:
-  app:
+  reverse-proxy:
+    image: nginx:alpine
+    container_name: reverse-proxy
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend/build:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+    networks:
+      - discodeit-network
+
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8081:80"
+      dockerfile: backend/Dockerfile
+    # replicas 설정 (분산 환경)
+    deploy:
+      replicas: 3
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/discodeit
+      - SPRING_DATASOURCE_USERNAME=discodeit_user
+      - SPRING_DATASOURCE_PASSWORD=discodeit1234
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=broker:9092
+      - DISCODEIT_ADMIN_USERNAME=admin
+      - DISCODEIT_ADMIN_EMAIL=admin@example.com
+      - DISCODEIT_ADMIN_PASSWORD=admin1234
+    expose:
+      - "80"
     depends_on:
       - db
-    env_file:
-      - .env
-    volumes:
-      - binary-data:/app/storage  # BinaryContentStorage 유지
+      - redis
+      - broker
+    networks:
+      - discodeit-network
 
   db:
-    image: postgres:15
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U discodeit_user -d discodeit" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    container_name: discodeit-postgres
-    restart: always
-    ports:
-      - "5432:5432"
+    image: postgres:16-alpine
+    container_name: db
     environment:
-      POSTGRES_DB: discodeit
-      POSTGRES_USER: discodeit_user
-      POSTGRES_PASSWORD: discodeit1234
+      - POSTGRES_DB=discodeit
+      - POSTGRES_USER=discodeit_user
+      - POSTGRES_PASSWORD=discodeit1234
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    expose:
+      - "5432"
+    networks:
+      - discodeit-network
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    expose:
+      - "6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - discodeit-network
+
+  broker:
+    image: apache/kafka:latest
+    container_name: broker
+    hostname: broker
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://broker:9092,CONTROLLER://broker:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - ./kafka-data:/tmp/kraft-combined-logs
+    networks:
+      - discodeit-network
 
 volumes:
-  pgdata:
-  binary-data:
+  postgres-data:
+  redis-data:
+  kafka-data:
+
+networks:
+  discodeit-network:
+    driver: bridge
