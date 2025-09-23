@@ -69,9 +69,11 @@ public class BasicReadStatusService implements ReadStatusService {
 
         ReadStatus readStatus = readStatusRepository.findById(readStatusId).orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
 
-        readStatus.update(newLastReadAt);
+        readStatus.update(newLastReadAt, request.newNotificationEnabled());
 
-        return readStatusMapper.toDto(readStatus);
+
+
+        return readStatusMapper.toDto(readStatusRepository.save(readStatus));
     }
 
     @Transactional

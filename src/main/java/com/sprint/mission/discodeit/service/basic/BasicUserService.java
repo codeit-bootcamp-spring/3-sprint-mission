@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -14,7 +15,10 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.session.SessionRegistry;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +29,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
@@ -32,7 +37,7 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
-    private final SessionRegistry sessionRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
@@ -54,7 +59,9 @@ public class BasicUserService implements UserService {
                             contentType
                     );
                     BinaryContent saveBinaryContent = binaryContentRepository.save(binaryContent);
-                    binaryContentStorage.put(saveBinaryContent.getId(), bytes);
+                    BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(saveBinaryContent.getId(), bytes);
+                    eventPublisher.publishEvent(event);
+
                     return saveBinaryContent;
                 })
                 .orElse(null);
@@ -75,6 +82,7 @@ public class BasicUserService implements UserService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "users")
     @Override
     public List<UserDto> findAll() {
         return userRepository.findAll()
@@ -84,6 +92,7 @@ public class BasicUserService implements UserService {
     }
 
     @Transactional
+    @CacheEvict(value = "users")
     @Override
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
                           Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
@@ -109,18 +118,24 @@ public class BasicUserService implements UserService {
                     (long) bytes.length,
                     contentType
             );
-            binaryContentRepository.save(binaryContent);
-            binaryContentStorage.put(binaryContent.getId(), bytes);
+            BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+
+            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(savedBinaryContent.getId(), bytes);
+            eventPublisher.publishEvent(event);
             return binaryContent;
         }).orElse(null);
 
-        String newPassword = passwordEncoder.encode(userUpdateRequest.newPassword());
+        String newPassword = null;
+        if (userUpdateRequest.newPassword() != null) {
+            newPassword = passwordEncoder.encode(userUpdateRequest.newPassword());
+        }
         user.update(newUsername, newEmail, newPassword, nullableProfile);
 
         return userMapper.toDto(user);
     }
 
     @Transactional
+    @CacheEvict(value = "users")
     @Override
     public void delete(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));

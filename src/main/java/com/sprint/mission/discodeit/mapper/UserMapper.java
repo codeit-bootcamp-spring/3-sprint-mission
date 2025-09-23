@@ -13,9 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class UserMapper {
 
     @Autowired
-    protected BinaryContentMapper binaryContentMapper;
-
-    @Autowired
     private JwtRegistry jwtRegistry;
 
     @Mapping(target = "online", expression = "java(isOnline(user))")

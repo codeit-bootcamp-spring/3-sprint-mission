@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.NotValidTokenException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -19,6 +20,7 @@ import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,7 @@ public class BasicAuthService implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final DiscodeitUserDetailsService discodeitUserDetailsService;
     private final JwtRegistry jwtRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
@@ -46,6 +49,7 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findById(uuid)
                 .orElseThrow(() -> new UserNotFoundException(uuid));
 
+        Role oldRole = user.getRole();
         user.updateRole(role);
         userRepository.save(user);
 
@@ -54,6 +58,8 @@ public class BasicAuthService implements AuthService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        RoleUpdatedEvent event = new RoleUpdatedEvent(user.getId(), oldRole, role);
+        eventPublisher.publishEvent(event);
         return userMapper.toDto(user);
     }
 

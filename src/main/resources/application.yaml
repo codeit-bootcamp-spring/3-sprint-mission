@@ -44,6 +44,9 @@ management:
   info:
     env:
       enabled: true
+  observations:
+    annotations:
+      enabled: true
 info:
   app:
     name: Discodeit
@@ -61,6 +64,19 @@ info:
     multipart:
       max-file-size: ${spring.servlet.multipart.max-file-size}
       max-request-size: ${spring.servlet.multipart.max-request-size}
+
+async:
+  executors:
+    file:
+      core-size: 2
+      max-size: 4
+      queue-capacity: 100
+      keep-alive-seconds: 120
+    notification:
+      core-size: 2
+      max-size: 4
+      queue-capacity: 500
+      keep-alive-seconds: 60
 
 logging:
   level:

@@ -10,6 +10,7 @@ public record ReadStatusDto(
         UUID userId,
         UUID channelId,
         @JsonFormat(shape = JsonFormat.Shape.STRING)
-        Instant lastReadAt
+        Instant lastReadAt,
+        boolean notificationEnabled
 ) {
 }

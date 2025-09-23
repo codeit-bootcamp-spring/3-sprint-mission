@@ -3,30 +3,26 @@ package com.sprint.mission.discodeit.storage.s3;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.NotificationRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.storage.S3BinaryContentStorage;
 import io.github.cdimascio.dotenv.Dotenv;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.util.StreamUtils;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
@@ -37,6 +33,12 @@ public class S3BinaryContentStorageTest {
     private static S3BinaryContentStorage storage;
     @Mock
     private BinaryContentRepository binaryContentRepository;
+    @Mock
+    private NotificationRepository notificationRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @BeforeEach
     public void setup() {
@@ -57,7 +59,7 @@ public class S3BinaryContentStorageTest {
         int presignedUrlExpiration = 600;
 
         storage = new S3BinaryContentStorage(
-                accessKey, secretKey, region, bucket, presignedUrlExpiration, binaryContentRepository
+                accessKey, secretKey, region, bucket, presignedUrlExpiration, binaryContentRepository, notificationRepository, userRepository, applicationEventPublisher
         );
     }
 

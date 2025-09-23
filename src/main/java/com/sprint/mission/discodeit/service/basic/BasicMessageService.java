@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -21,6 +23,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -42,6 +45,7 @@ public class BasicMessageService implements MessageService {
     private final MessageMapper messageMapper;
     private final PageResponseMapper pageResponseMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
@@ -66,10 +70,16 @@ public class BasicMessageService implements MessageService {
 
             message.addAttachment(binaryContent);
             BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-            binaryContentStorage.put(savedBinaryContent.getId(), req.bytes());
+
+            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(savedBinaryContent.getId(), req.bytes());
+            eventPublisher.publishEvent(event);
         }
 
-        return messageMapper.toDto(messageRepository.save(message));
+        Message savedMessage = messageRepository.save(message);
+
+        MessageCreatedEvent messageCreatedEvent = new MessageCreatedEvent(savedMessage.getId(), message.getChannel().getId(), message.getAuthor().getId(), message.getContent());
+        eventPublisher.publishEvent(messageCreatedEvent);
+        return messageMapper.toDto(savedMessage);
     }
 
     @Transactional(readOnly = true)

@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -23,6 +24,7 @@ public class JwtLogoutHandler implements LogoutHandler {
     private final JwtRegistry jwtRegistry;
     private final UserRepository userRepository;
 
+    @CacheEvict(value = "users", allEntries = true)
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         log.info("[JwtLogoutHandler] logout 호출 됨");

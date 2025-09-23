@@ -19,8 +19,8 @@ public enum ErrorCode {
     DUPLICATE_USER_STATUS("DUPLICATE_USER_STATUS", HttpStatus.CONFLICT, "중복된 사용자 상태입니다."),
     USER_STATUS_NOT_FOUND("USER_STATUS_NOT_FOUND", HttpStatus.NOT_FOUND, "사용자 상태 정보를 찾을 수 없습니다."),
     PRIVATE_CHANNEL_UPDATE_DENIED("PRIVATE_CHANNEL_UPDATE_DENIED", HttpStatus.FORBIDDEN, "PRIVATE 채널은 수정할 수 없습니다."),
-    TOKEN_NOT_VALID("TOKEN_NOT_VALID", HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.");
-
+    TOKEN_NOT_VALID("TOKEN_NOT_VALID", HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    NOTIFICATION_NOT_FOUND("NOTIFICATION_NOT_FOUND", HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다.");
     private final String code;
     private final HttpStatus status;
     private final String message;

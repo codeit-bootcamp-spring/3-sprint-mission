@@ -45,10 +45,14 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     public UUID put(UUID id, byte[] bytes) {
         Path path = resolvePath(id);
         try {
+            Thread.sleep(3000);
             Files.write(path, bytes);
             return id;
         } catch (IOException e) {
             throw new RuntimeException("Failed to write file: " + path, e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
         }
     }
 

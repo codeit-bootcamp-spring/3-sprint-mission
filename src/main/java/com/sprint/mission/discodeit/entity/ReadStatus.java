@@ -3,10 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,16 +37,27 @@ public class ReadStatus extends BaseUpdatableEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Instant lastReadAt;
 
+    @Column(name = "notification_enabled")
+    private Boolean notificationEnabled;
+
 
     public ReadStatus(User user, Channel channel, Instant lastReadAt) {
         this.user = user;
         this.channel = channel;
         this.lastReadAt = lastReadAt;
+        if (channel.getType().equals(ChannelType.PRIVATE)) {
+            this.notificationEnabled = true;
+        }  else {
+            this.notificationEnabled = false;
+        }
     }
 
-    public void update(Instant newLastReadAt) {
+    public void update(Instant newLastReadAt, Boolean notificationEnabled) {
         if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
             this.lastReadAt = newLastReadAt;
+        }
+        if (notificationEnabled != null) {
+            this.notificationEnabled = notificationEnabled;
         }
     }
 }
