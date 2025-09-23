@@ -4,6 +4,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Fail.fail;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +32,11 @@ public class S3BinaryContentStorageTest {
         Properties env = new Properties();
         env.load(Files.newBufferedReader(Path.of(".env")));
 
+        ApplicationEventPublisher publisher = event -> {
+        };
+
         storage = new S3BinaryContentStorage(
+            publisher,
             env.getProperty("AWS_S3_ACCESS_KEY"),
             env.getProperty("AWS_S3_SECRET_KEY"),
             env.getProperty("AWS_S3_REGION"),
@@ -75,6 +81,7 @@ public class S3BinaryContentStorageTest {
             "test-file.txt",
             (long) testData.length,
             "text/plain"
+            , BinaryContentStatus.SUCCESS
         );
 
         ResponseEntity<Resource> response = storage.download(binaryContentDto);

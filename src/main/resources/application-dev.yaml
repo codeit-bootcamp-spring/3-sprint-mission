@@ -30,12 +30,17 @@ spring:
 
 logging:
   level:
-    root: info
-    com.sprint.mission.discodeit: info
+    root: debug
+    com.sprint.mission.discodeit: debug
     org.hibernate.SQL: off
     org.hibernate.orm.jdbc.bind: off
-    org.springframework.security: debug
-    org.springframework.web: debug
+    org.springframework.security: warn
+    org.springframework.web: warn
+    # 캐시 관련 로그
+    org.springframework.cache: DEBUG
+    org.springframework.cache.interceptor: TRACE
+    # 카프카 관련 로그
+    org.apache.kafka: WARN
 
 server:
   port: 8080

@@ -3,16 +3,19 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binaryContent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -22,7 +25,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
-    private final BinaryContentStorage binaryContentStorage;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
@@ -35,7 +38,10 @@ public class BasicBinaryContentService implements BinaryContentService {
 
         BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
         binaryContentRepository.save(binaryContent);
-        binaryContentStorage.put(binaryContent.getId(), bytes);
+
+        eventPublisher.publishEvent(
+            new BinaryContentCreatedEvent(binaryContent.getId(), bytes)
+        );
 
         log.info("파일 업로드 완료 - fileId: {}, 파일명: {}, 크기: {} bytes", binaryContent.getId(), fileName,
             bytes.length);
@@ -67,6 +73,15 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContentRepository.deleteById(binaryContentId);
 
         log.info("파일 삭제 완료 - fileId: {}", binaryContentId);
+    }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public void updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+
+        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+            .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId));
+
+        binaryContent.updateStatus(status);
     }
 }

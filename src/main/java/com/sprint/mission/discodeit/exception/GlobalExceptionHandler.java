@@ -25,8 +25,8 @@ public class GlobalExceptionHandler {
 
         HttpStatus status = switch (exceptionName) {
             case "UserNotFoundException", "ChannelNotFoundException", "MessageNotFoundException",
-                 "BinaryContentNotFoundException", "ReadStatusNotFoundException" ->
-                HttpStatus.NOT_FOUND;
+                 "BinaryContentNotFoundException", "ReadStatusNotFoundException",
+                 "NotificationNotFoundException" -> HttpStatus.NOT_FOUND;
 
             case "EmailAlreadyExistsException", "UserNameAlreadyExistsException",
                  "ReadStatusAlreadyExistsException", "PrivateChannelModificationException",
@@ -34,6 +34,8 @@ public class GlobalExceptionHandler {
                  "InvalidMessageContentException" -> HttpStatus.BAD_REQUEST;
 
             case "InvalidTokenException" -> HttpStatus.UNAUTHORIZED;
+
+            case "NotificationAlreadyExistsException" -> HttpStatus.FORBIDDEN;
 
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };

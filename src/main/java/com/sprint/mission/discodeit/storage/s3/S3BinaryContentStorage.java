@@ -1,23 +1,34 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.event.BinaryStorageFailedEvent;
+import com.sprint.mission.discodeit.exception.binaryContent.BinaryStorageExhaustedRetriesException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.log4j.Log4j2;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -33,23 +44,37 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
 public class S3BinaryContentStorage implements BinaryContentStorage {
 
+    private final ApplicationEventPublisher publisher;
+
     private final String accessKey;
     private final String secretKey;
     private final String region;
     private final String bucket;
 
     public S3BinaryContentStorage(
+        ApplicationEventPublisher publisher,
         @Value("${discodeit.storage.s3.access-key}") String accessKey,
         @Value("${discodeit.storage.s3.secret-key}") String secretKey,
         @Value("${discodeit.storage.s3.region}") String region,
         @Value("${discodeit.storage.s3.bucket}") String bucket
     ) {
+        this.publisher = publisher;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.region = region;
         this.bucket = bucket;
     }
 
+    @Retryable(
+        retryFor = {S3Exception.class, SdkException.class},
+        maxAttemptsExpression = "#{${app.s3.retry.max-attempts:3}}",
+        backoff = @Backoff(
+            delayExpression = "#{${app.s3.retry.delay:500}}",
+            multiplierExpression = "#{${app.s3.retry.multiplier:2.0}}",
+            maxDelayExpression = "#{${app.s3.retry.max-delay:5000}}",
+            random = true
+        )
+    )
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes) {
 
@@ -146,4 +171,39 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         }
     }
 
+    @Recover
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public UUID recoverPut(Exception e, UUID binaryContentId) {
+
+        String requestId = Optional.ofNullable(MDC.get("requestId")).orElse("Unknown");
+
+        String errorSummary = buildErrorSummary(e);
+
+        publisher.publishEvent(
+            new BinaryStorageFailedEvent(
+                binaryContentId,
+                requestId,
+                errorSummary
+            )
+        );
+
+        throw new BinaryStorageExhaustedRetriesException(binaryContentId);
+    }
+
+    private String buildErrorSummary(Exception ex) {
+        if (ex instanceof S3Exception se) {
+            String msg = se.awsErrorDetails() != null ? se.awsErrorDetails().errorMessage()
+                : se.getMessage();
+            return " %s (Service: S3, Status Code: %d, Request ID: %s, Extended Request ID: %s)"
+                .formatted(msg, se.statusCode(), nullSafe(se.requestId()),
+                    nullSafe(se.extendedRequestId()));
+        } else if (ex instanceof SdkException se) {
+            return se.getMessage();
+        }
+        return ex.getMessage();
+    }
+
+    private String nullSafe(String value) {
+        return value == null ? "Unknown" : value;
+    }
 }

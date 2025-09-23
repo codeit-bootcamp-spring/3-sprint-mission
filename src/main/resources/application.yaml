@@ -21,6 +21,43 @@ spring:
       max-file-size: 10MB
       max-request-size: 20MB
 
+  #  cache:
+  #    caffeine:
+  #      spec: >
+  #        maximumSize=100,
+  #        expireAfterAccess=600s,
+  #        recordStats
+
+  cache:
+    type:
+      caffeine type: redis
+    cache-names:
+      - channels
+      - notifications
+      - users
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 discodeit:
   storage:
     type: ${STORAGE_TYPE:local}
@@ -32,6 +69,10 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
+
+feature:
+  notification:
+    local-listener-enabled: false
 
 logging:
   level:
@@ -47,8 +88,11 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers
+        include: health, info, metrics, loggers, caches
       base-path: /actuator
+  observations:
+    annotations:
+      enabled: true
   endpoint:
     health:
       show-details: always

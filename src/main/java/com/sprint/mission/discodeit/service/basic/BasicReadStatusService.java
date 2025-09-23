@@ -89,13 +89,15 @@ public class BasicReadStatusService implements ReadStatusService {
         log.info("읽음 상태 수정 중 - readStatusId: {}", readStatusId);
 
         Instant newLastReadAt = request.newLastReadAt();
+        Boolean newNotificationEnabled = request.newNotificationEnabled();
+
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
             .orElseThrow(() -> {
                 log.warn("읽음 상태 수정 실패 - 존재하지 않는 readStatusId: {}", readStatusId);
                 return new ReadStatusNotFoundException(readStatusId);
             });
 
-        readStatus.update(newLastReadAt);
+        readStatus.update(newLastReadAt, newNotificationEnabled);
 
         log.info("읽음 상태 수정 완료 - readStatusId: {}", readStatusId);
 

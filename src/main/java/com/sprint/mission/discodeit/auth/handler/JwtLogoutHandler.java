@@ -1,12 +1,15 @@
 package com.sprint.mission.discodeit.auth.handler;
 
-import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.config.CacheConfig;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
@@ -19,6 +22,7 @@ public class JwtLogoutHandler implements LogoutHandler {
     private final JwtTokenProvider tokenProvider;
     private final JwtRegistry jwtRegistry;
 
+    @CacheEvict(value = CacheConfig.USERS_ALL, allEntries = true)
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response,
         Authentication authentication) {
@@ -27,14 +31,14 @@ public class JwtLogoutHandler implements LogoutHandler {
 
         tokenProvider.expireRefreshCookie(response);
 
-        if (authentication != null
-            && authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
-
-            jwtRegistry.invalidateJwtInformationByUserId(userDetails.userId());
-
-            log.debug("[JwtLogoutHandler] JWT Registry에서 사용자 정보 제거 완료 - userId: {}",
-                userDetails.userId());
-        }
+        Arrays.stream(request.getCookies())
+            .filter(cookie -> cookie.getName().equals(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME))
+            .findFirst()
+            .ifPresent(cookie -> {
+                String refreshToken = cookie.getValue();
+                UUID userId = tokenProvider.getUserId(refreshToken);
+                jwtRegistry.invalidateJwtInformationByUserId(userId);
+            });
 
     }
 }

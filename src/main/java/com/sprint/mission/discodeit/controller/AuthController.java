@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.jwt.JwtDto;
 import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
+public class AuthController implements AuthApi {
 
     private final AuthService authService;
 
@@ -44,7 +45,6 @@ public class AuthController {
         ) String refreshToken,
         HttpServletResponse response
     ) {
-
         log.debug("[AuthController] 리프레시 토큰 재발급 요청");
 
         JwtDto jwtDto = authService.refreshToken(refreshToken, response);
